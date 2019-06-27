@@ -1,0 +1,92 @@
+#define DIR_PIN 2
+#define STEP_PIN 3
+#define MS1 4
+#define MS2 5
+
+#define EN  6
+
+char user_input;
+int x;
+int y;
+int state;
+
+void setup() { 
+  pinMode(DIR_PIN, OUTPUT); 
+  pinMode(STEP_PIN, OUTPUT); 
+  Serial.begin(9600); //Open Serial connection for debugging
+  Serial.println("Begin motor control");
+} 
+
+void loop(){ 
+
+  while(Serial.available()){
+      user_input = Serial.read(); //Read user input and trigger appropriate function
+      digitalWrite(EN, LOW); //Pull enable pin low to allow motor control
+      if (user_input =='1')
+      {
+          rotate(1000, .2); 
+      }
+      else if(user_input =='2')
+      {
+          rotate(-1000, 0.2); 
+      }
+      else if(user_input =='3')
+      {
+         rotate(25000, 1); //forward
+      }
+      else if(user_input =='4')
+      {
+          rotate(-25000, 1); //reverse
+      }
+      else if(user_input =='5')
+      {
+        for(int j=0; j < 250; j++){
+          rotate(75, .1);
+          delay(500); 
+        }
+      }
+      else if(user_input =='6')
+      {
+         rotate(8000, .1); //forward
+      }
+      else
+      {
+        Serial.println("Operation complete");
+      }
+      //resetEDPins();
+  }
+ 
+}
+
+
+
+void rotate(int steps, float speed){ 
+  //rotate a specific number of microsteps (8 microsteps per step) - (negitive for reverse movement)
+  //speed is any number from .01 -> 1 with 1 being fastest - Slower is stronger
+  int dir = (steps > 0)? HIGH:LOW;
+  steps = abs(steps);
+
+  digitalWrite(DIR_PIN,dir); 
+
+  float usDelay = (1/speed) * 70;
+
+  for(int i=0; i < steps; i++){ 
+    digitalWrite(STEP_PIN, HIGH); 
+    delayMicroseconds(usDelay); 
+
+    digitalWrite(STEP_PIN, LOW); 
+    delayMicroseconds(usDelay); 
+  } 
+} 
+
+
+
+//Reset Easy Driver pins to default states
+void resetEDPins()
+{
+  digitalWrite(STEP_PIN, LOW);
+  digitalWrite(DIR_PIN, LOW);
+  digitalWrite(MS1, LOW);
+  digitalWrite(MS2, LOW);
+  digitalWrite(EN, HIGH);
+}
